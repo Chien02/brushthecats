@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 502ecc923ced6694e84430d7ef2f1da9, type: 3}
+  m_Name: Nam
+  m_EditorClassIdentifier: Assembly-CSharp::CatProfile
+  spriteAway: {fileID: -6900677637511914920, guid: 27d1bf2524b436d4f92917b7239cbcf9, type: 3}
+  spriteWarning: {fileID: -5013777757851244217, guid: 37febfae0b98ef04996ccf7717976856, type: 3}
+  spriteLooking: {fileID: -5013777757851244217, guid: 37febfae0b98ef04996ccf7717976856, type: 3}
+  spriteAngry: {fileID: -2726367482940437379, guid: ccafcc698eb0536468c8eb46969326d3, type: 3}
+  hairParticleSprite: {fileID: 7014400092742720408, guid: 269cddf7e24b71547aebb9bf8e521103, type: 3}
+  catName: Nam
+  nature: "Qu\u1EADy, Hung d\u1EEF"
+  age: 3
+  soundPurring: {fileID: 8300000, guid: 9c7558c4221cf0a4bb3586211a744dce, type: 3}
+  soundWarning: {fileID: 8300000, guid: d909347495ca5a34294fc337a943522b, type: 3}
+  soundLooking: {fileID: 0}
+  soundAngry: {fileID: 8300000, guid: 82a2bf502e27b214cb697d7c904a7077, type: 3}
+  soundHappy: {fileID: 8300000, guid: 23f896819002244459e77defc7f8ca60, type: 3}

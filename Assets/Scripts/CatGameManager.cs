@@ -31,7 +31,7 @@ public class CatGameManager : MonoBehaviour
     private void UpdateScoreUI()
     {
         // UI text hien thi tieng Viet khong dau de tranh loi font
-        scoreText.text = "So lan chai: " + (score / 10).ToString(); 
+        scoreText.text = "Số lần chải: " + (score / 10).ToString(); 
     }
 
     // Ham nay de public de Cat goi khi chuyen sang trang thai Angry

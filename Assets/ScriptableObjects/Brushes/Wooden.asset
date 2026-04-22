@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48edad5388a1eb0469f0fe4edc86a1bf, type: 3}
+  m_Name: Wooden
+  m_EditorClassIdentifier: Assembly-CSharp::BrushInfo
+  brushName: Wooden
+  brushSprite: {fileID: 5831936790779453474, guid: 17146aba60e921c408874c42ca8bcaa9, type: 3}
+  brushSound: {fileID: 8300000, guid: 3bfe177184e85cb4ba1ddb0b7c1ea812, type: 3}
