@@ -20,6 +20,7 @@ MonoBehaviour:
   catName: Minh Minh
   nature: "Hi\u1EC1n, d\u1EC5 qu\u1EA1o"
   age: 3
+  price: 30
   soundPurring: {fileID: 8300000, guid: d1795a03eea772c4eb2eeb2221cc6eab, type: 3}
   soundWarning: {fileID: 8300000, guid: d909347495ca5a34294fc337a943522b, type: 3}
   soundLooking: {fileID: 0}

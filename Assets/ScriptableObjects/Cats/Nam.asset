@@ -20,6 +20,7 @@ MonoBehaviour:
   catName: Nam
   nature: "Qu\u1EADy, Hung d\u1EEF"
   age: 3
+  price: 50
   soundPurring: {fileID: 8300000, guid: 9c7558c4221cf0a4bb3586211a744dce, type: 3}
   soundWarning: {fileID: 8300000, guid: d909347495ca5a34294fc337a943522b, type: 3}
   soundLooking: {fileID: 0}

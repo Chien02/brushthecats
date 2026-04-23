@@ -1,0 +1,12 @@
+{
+  "milestones": [
+    { "score": 0, "rankName": "Người mới bắt đầu", "unlockItem": "none", "type": "none"},
+    { "score": 30, "rankName": "Thợ chải tập sự", "unlockItem": "black_brush", "type": "brush" },
+    { "score": 50, "rankName": "Người bạn của mèo", "unlockItem": "cat_nam", "type": "pet" },
+    { "score": 100, "rankName": "Bàn tay vàng", "unlockItem": "gold_brush", "type": "brush" },
+    { "score": 120, "rankName": "Chuyên gia chăm sóc", "unlockItem": "cat_nip_basic", "type": "treatment" },
+    { "score": 150, "rankName": "Bậc thầy chải chuốt", "unlockItem": "cat_nip_premium", "type": "treatment" },
+    { "score": 300, "rankName": "Thần tượng của loài mèo", "unlockItem": "diamond_brush", "type": "brush" },
+    { "score": 500, "rankName": "Huyền thoại Cat-nip", "unlockItem": "crown", "type": "accessory" }
+  ]
+}

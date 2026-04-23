@@ -5,4 +5,5 @@ public class ChairInfo : ScriptableObject
 {
     public string chairName;
     public Sprite chairSprite;
+    public int price;
 }

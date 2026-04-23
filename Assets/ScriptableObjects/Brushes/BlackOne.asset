@@ -15,3 +15,4 @@ MonoBehaviour:
   brushName: The Black One
   brushSprite: {fileID: 2063826154672905881, guid: 8eb36d743b864554abffafacffebc851, type: 3}
   brushSound: {fileID: 8300000, guid: a87c2d5dda281f44ebc01269d417515c, type: 3}
+  price: 30

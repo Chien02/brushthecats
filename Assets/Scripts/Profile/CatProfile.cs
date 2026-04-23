@@ -11,6 +11,7 @@ public class CatProfile : ScriptableObject
     public string catName; 
     public string nature;
     public int age;
+    public int price;
 
     [Header("Audio per State")]
     public AudioClip soundPurring;

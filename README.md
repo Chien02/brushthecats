@@ -38,4 +38,47 @@ Các thực thể trong trò chơi có một số trạng thái [Trạng thái +
     2. Khi người chơi giữ chuột, chuyển sang Brushing.
     3. Khi người chơi buông chuột, chuyển sang Idle.
 
+CHỨC NĂNG MỞ KHÓA VẬT PHẨM KHI ĐẠT ĐIỂM NHẤT ĐỊNH
+Có 2 danh sách mà người chơi có thể mở khóa
+1. Danh sách mèo
+2. Danh sách lược
+
+Chức năng mà người dùng có thể tương tác với chức năng này
+1. Xem danh sách: bấm vào nút bất kì để xem danh sách
+2. Mở khóa khi đủ điểm.
+3. Nhận thông báo khi đủ điểm để mở khóa.
+
+Thiết kế:
+List -> 1 giao diện chiếm toàn trang: trong đó có 3 phần chính
+1 Nút để trở lại màn chơi chính.
+1 Thanh navigation để chuyển tab sang các danh sách. (Chứa 2 nút: Mèo, Lược)
+1 Khu vực để hiển thị danh sách (Scroll Horizontal)
+- Cat list
+- Brush list
+
+Item bên trong mỗi list:
+- Item có 2 trạng thái: locked, unlocked.
+    - Trạng thái locked: Image sẽ sẽ bị che bởi một mask màu đen (sillouet), nút unlock hiển thị, còn nút change thì bị ẩn.
+    - Trạng thái unlocked: Image không bị che nữa, nút unlock đổi thành change, ẩn nút unlock.
+- Item: chứa tên, mức điểm, 2 nút mở khóa/đổi, hình ảnh. Chứa profile để load.
+- Chứa phương thức LoadProfile(profile)
+- 2 nút chức năng của item:
+    - unlock: mở khóa khi đủ, 
+
+List tổng mỗi khi được gọi sẽ kêu list con tương ứng nạp dữ liệu.
+List con chạy vòng lặp với số vòng lặp bằng với số lượng profile, mỗi lần lặp thì sinh ra 1 ui mới dựa vào prefab.
+
+*Thông báo khi đủ điểm
+Các thành phần của chức năng này:
+1. File chứa mức điểm để mở khóa
+2. Prefab Thông báo (UI): Image chứa 1 thành phần: text -> "Bạn đã mở khóa một vật phẩm mới"
+3. Image tròn đỏ để chỉ dẫn người dùng cần bấm vào nút nào. (Được ẩn/hiện bởi hàm Announce())
+2. CatGameManager đảm nhiệm việc theo dõi thông qua hàm TrackPoint(point)
+
+Cách hoạt động:
+CatGameManager gọi hàm TrackPoint() bên trong hàm AddPoint(), nếu đạt điều kiện thì gọi hàm Announce()
+Hàm Announce() hoạt động như sau:
+- Gọi animation cho Prefab thông báo xuất hiện
+- Chơi audio "WOW"
+- Gọi hàm cho chấm đỏ xuất hiện. Item.VisibleRedDot() (Chấm đỏ sẽ được tắt đi mỗi khi người dùng bấm vào nút đó).
 

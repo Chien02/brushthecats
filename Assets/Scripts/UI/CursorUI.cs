@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 
 public class CursorUI : MonoBehaviour
 {
-    public BrushInfo currentBrush;
+    public BrushInfo brushInfo;
     public bool isBrushing = false;
     private RectTransform _cursorTransform;
     private Canvas _parentCanvas;
@@ -48,13 +48,13 @@ public class CursorUI : MonoBehaviour
 
     private void LoadBrushInfo()
     {
-        if (currentBrush != null)
+        if (brushInfo != null)
         {
             // Cập nhật sprite của con trỏ chuột
             var image = GetComponentInChildren<UnityEngine.UI.Image>();
             if (image != null)
             {
-                image.sprite = currentBrush.brushSprite;
+                image.sprite = brushInfo.brushSprite;
             }
         }
     }
@@ -62,7 +62,7 @@ public class CursorUI : MonoBehaviour
     private void OnEnable()
     {
         pointerPositionAction.action.performed += OnPointerPositionChanged;
-        Cursor.visible = false; // Ẩn con trỏ chuột mặc định của hệ điều hành
+        // Cursor.visible = false; // Ẩn con trỏ chuột mặc định của hệ điều hành
     }
 
     private void OnDisable()
