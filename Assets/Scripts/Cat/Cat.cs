@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class Cat : MonoBehaviour
 {
@@ -12,6 +11,10 @@ public class Cat : MonoBehaviour
     public AudioSource audioSource;
     public AudioSource audioFXSource;
     private CatState currentState = CatState.Away;
+
+    [Header ("Cat Properties")]
+    public Vector3 defaultScale = new(1.5f, 1.5f, 1.5f);
+    public int hairParticleCount = 15;
 
     public CatState CurrentState
     {
@@ -29,25 +32,15 @@ public class Cat : MonoBehaviour
 
     [Header("Cat State Durations")]
     public float MaxDurationAway = 5f;
-    public float minDurationAway = 2f;
+    public float minDurationAway = 1f;
     public float durationWarning = 0.5f;
     public float durationLooking = 3f;
 
-    public bool IsBrushing { get; private set; } = false;
-
-    [Header("Brushing Mechanics")]
-    public float brushingRange = 0.1f; 
-    // Khoang cach keo xuong tich luy de tinh la 1 lan chai (don vi pixel man hinh)
-    // Gia tri mac dinh ~100px, co the chinh trong Inspector
-    public float strokeDistanceThreshold = 20f; 
-    
-    // Tich luy khoang cach keo xuong lien tuc (pixel)
-    private float _accumulatedDownDistance = 0f;
+    public bool IsBrushing { get; set; } = false;
 
     void Awake()
     {
         LoadCatProfile(catProfile);
-        // Luôn kêu một tiếng khi bắt đầu
         PlaySFX(catProfile.soundHappy);
     }
 
@@ -57,24 +50,25 @@ public class Cat : MonoBehaviour
         PlayStateSound(CatState.Away);
     }
 
-    void Update()
-    {
-        if (CurrentState == CatState.Angry) return;
-        HandleInput();
-    }
-
+    #region Load Data
     public void LoadCatProfile(CatProfile profile)
     {
         if (profile == null) return;
         catProfile = profile;
 
-        var tsa = hairParticles.textureSheetAnimation;
-        tsa.SetSprite(0, catProfile.hairParticleSprite);
+        ParticleSystemRenderer psr = hairParticles.GetComponent<ParticleSystemRenderer>();
+        psr.material = catProfile.hairParticleMaterial;
+
+        ResetAnimation();
 
         CurrentState = CatState.Away;
         UpdateSprite(CurrentState);
         UpdateAnimation(CurrentState);
+
+        // Chơi âm thanh happy
+        PlaySFX(catProfile.soundHappy);
     }
+    #endregion
 
     IEnumerator CatBehaviorRoutine()
     {
@@ -104,6 +98,55 @@ public class Cat : MonoBehaviour
         }
     }
 
+    #region Interaction from Brush
+    // Hàm này sẽ được Brush gọi liên tục khi đang đè lên mèo
+    public void HandleBrushing(Vector3 brushPosition, bool isMoving, bool isScoringStroke)
+    {
+        if (CurrentState == CatState.Angry) return;
+
+        // Nếu đang nhìn mà bị chải -> Tức giận
+        if (CurrentState == CatState.Looking)
+        {
+            CurrentState = CatState.Angry;
+            return;
+        }
+
+        // 1. Dời vị trí Particle chạy theo chuột/lược
+        Vector3 particlePos = hairParticles.transform.position;
+        particlePos.x = brushPosition.x;
+        particlePos.y = brushPosition.y;
+        hairParticles.transform.position = particlePos;
+
+        // 2. Xử lý Logic Particle và Score
+        if (isMoving)
+        {
+            if (!IsBrushing)
+            {
+                IsBrushing = true;
+                hairParticles.Emit(hairParticleCount); // Bắn hạt khi bắt đầu vuốt
+            }
+
+            if (isScoringStroke && catGameManager != null)
+            {
+                catGameManager.AddScore(); // Cộng điểm khi đủ 1 nhát chải
+            }
+        }
+        else
+        {
+            if (IsBrushing)
+            {
+                IsBrushing = false;
+            }
+        }
+    }
+
+    public void ResetBrushingState()
+    {
+        IsBrushing = false;
+    }
+    #endregion
+
+    #region Animation
     private void UpdateAnimation(CatState state)
     {
         switch (state)
@@ -115,92 +158,17 @@ public class Cat : MonoBehaviour
         }
     }
 
-    void HandleInput()
+    void ResetAnimation()
     {
-        if (Mouse.current == null) return;
-
-        Vector2 mousePosScreen = Mouse.current.position.ReadValue();
-        Vector2 mousePos = Camera.main.ScreenToWorldPoint(mousePosScreen);
-        RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero);
-
-        bool isMousePressed = Mouse.current.leftButton.isPressed;
-        bool wasPressedThisFrame = Mouse.current.leftButton.wasPressedThisFrame;
-        Vector2 mouseDelta = Mouse.current.delta.ReadValue();
-        
-        bool mouseMoving = Mathf.Abs(mouseDelta.x) > brushingRange || Mathf.Abs(mouseDelta.y) > brushingRange;
-
-        // 1. Khi VUA NHAN CHUOT vao meo -> Reset tich luy khoang cach
-        if (wasPressedThisFrame && hit.collider != null && hit.collider.gameObject.name == "Cat")
+        if (LeanTween.isTweening(this.gameObject))
         {
-            _accumulatedDownDistance = 0f;
+            LeanTween.cancel(this.gameObject);
         }
-
-        // 2. Khi DANG GIU CHUOT
-        if (isMousePressed && hit.collider != null && hit.collider.gameObject.name == "Cat")
-        {
-            if (CurrentState == CatState.Looking)
-            {
-                CurrentState = CatState.Angry; 
-                return;
-            }
-
-            // TINH NANG 1: Doi vi tri Particle chay theo chuot
-            Vector3 particlePos = hairParticles.transform.position;
-            particlePos.x = mousePos.x;
-            particlePos.y = mousePos.y;
-            hairParticles.transform.position = particlePos;
-
-            if (mouseMoving)
-            {
-                if (!IsBrushing)
-                {
-                    IsBrushing = true;
-                    hairParticles.Play();
-                }
-                
-                // TINH NANG 2: Tich luy khoang cach keo xuong (mouseDelta.y < 0 la xuong)
-                float downDelta = -mouseDelta.y; // pixel
-                if (downDelta > 0)
-                {
-                    // Dang keo xuong: cong don vao bộ dem
-                    _accumulatedDownDistance += downDelta;
-
-                    // Du 1 "nhat chai" → cong diem, reset, tiep tuc chai
-                    while (_accumulatedDownDistance >= strokeDistanceThreshold)
-                    {
-                        catGameManager.AddScore();
-                        _accumulatedDownDistance -= strokeDistanceThreshold;
-                    }
-                }
-                else
-                {
-                    // Keo nguoc len: reset bo dem, bat dau lai tu dau
-                    _accumulatedDownDistance = 0f;
-                }
-            }
-            else
-            {
-                if (IsBrushing)
-                {
-                    IsBrushing = false;
-                    hairParticles.Stop();
-                }
-            }
-        }
-        // 3. Khi THA CHUOT hoac re chuot ra ngoai
-        else
-        {
-            _accumulatedDownDistance = 0f;
-            
-            if (IsBrushing)
-            {
-                IsBrushing = false;
-                hairParticles.Stop();
-            }
-        }
+        this.transform.localScale = defaultScale;
     }
+    #endregion
 
-    // Handle Sound
+    #region Sound
     void PlayStateSound(CatState state)
     {
         if (audioSource == null || catProfile == null) return;
@@ -223,12 +191,9 @@ public class Cat : MonoBehaviour
                 audioSource.clip = clipToPlay;
                 audioSource.Play();
             }
-            else
+            else if (!audioSource.isPlaying)
             {
-                if (!audioSource.isPlaying)
-                {
-                    audioSource.UnPause();
-                }
+                audioSource.UnPause();
             }
         } 
         else
@@ -244,4 +209,5 @@ public class Cat : MonoBehaviour
             audioFXSource.PlayOneShot(clip);
         }
     }
+    #endregion
 }

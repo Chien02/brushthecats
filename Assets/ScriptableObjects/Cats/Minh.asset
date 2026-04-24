@@ -16,11 +16,11 @@ MonoBehaviour:
   spriteWarning: {fileID: -5513062722979220014, guid: eebf26cbc774be445b0e545ea323dce9, type: 3}
   spriteLooking: {fileID: -5513062722979220014, guid: eebf26cbc774be445b0e545ea323dce9, type: 3}
   spriteAngry: {fileID: 8166710274925509176, guid: c9c6fa411d574134db96006692352eb6, type: 3}
-  hairParticleSprite: {fileID: 7014400092742720408, guid: 269cddf7e24b71547aebb9bf8e521103, type: 3}
+  hairParticleMaterial: {fileID: 2100000, guid: 5930f1b5634c34d4a9542060c6d2db21, type: 2}
   catName: Minh Minh
   nature: "Hi\u1EC1n, d\u1EC5 qu\u1EA1o"
   age: 3
-  price: 30
+  price: 0
   soundPurring: {fileID: 8300000, guid: d1795a03eea772c4eb2eeb2221cc6eab, type: 3}
   soundWarning: {fileID: 8300000, guid: d909347495ca5a34294fc337a943522b, type: 3}
   soundLooking: {fileID: 0}

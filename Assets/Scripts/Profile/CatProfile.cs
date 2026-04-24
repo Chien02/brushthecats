@@ -7,7 +7,7 @@ public class CatProfile : ScriptableObject
     public Sprite spriteWarning;
     public Sprite spriteLooking;
     public Sprite spriteAngry;
-    public Sprite hairParticleSprite;
+    public Material hairParticleMaterial;
     public string catName; 
     public string nature;
     public int age;

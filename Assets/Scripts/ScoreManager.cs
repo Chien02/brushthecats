@@ -8,6 +8,7 @@ public class ScoreMilestone
     public string rankName;
     public string unlockItem;
     public string type;
+    public bool isUnlocked;
 }
 
 [System.Serializable]
@@ -19,6 +20,7 @@ public class ScoreLadderData
 
 public class ScoreManager : MonoBehaviour
 {
+    public static ScoreManager Instance { get; private set; }
     public TextAsset jsonFile;
     private ScoreLadderData ladderData;
 
@@ -52,6 +54,35 @@ public class ScoreManager : MonoBehaviour
         }
         
         return ladderData.milestones[0]; // Trả về mốc thấp nhất nếu không có gì khớp
+    }
+
+    public List<ScoreMilestone> GetAllMilestones()
+    {
+        return ladderData != null ? ladderData.milestones : new List<ScoreMilestone>();
+    }
+
+    public ScoreMilestone GetNextMilestone(int currentScore)
+    {
+        if (ladderData == null || ladderData.milestones.Count == 0) return null;
+
+        foreach (var milestone in ladderData.milestones)
+        {
+            if (milestone.score >= currentScore && !milestone.isUnlocked)
+            {
+                return milestone; // Trả về mốc tiếp theo mà người chơi chưa đạt được
+            }
+        }
+        
+        return null; // Nếu đã đạt hết tất cả mốc
+    }
+
+    public void UnlockMilestone(ScoreMilestone milestone)
+    {
+        if (milestone != null)
+        {
+            milestone.isUnlocked = true;
+            Debug.Log($"Mốc {milestone.rankName} đã được mở khóa!");
+        }
     }
 
     // Ví dụ cách gọi khi người chơi ghi điểm

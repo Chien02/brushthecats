@@ -19,13 +19,30 @@ public class ListCatItem : ListItem
         UpdateItemStatus();
     }
 
+    public void OnItemButtonClicked()
+    {
+        if (catProfile == null) return;
+
+        switch (itemState)
+        {
+            case ItemState.Unlocked:
+                OnUnlockButtonClicked();
+                break;
+            case ItemState.Available:
+                OnChangeCatButtonClicked(); // CatGameManager sẽ tự đổi state: Available -> InUse, và cập nhật lại mèo InUse -> Available
+                break;
+            case ItemState.InUse:
+                Debug.Log("Đây là mèo đang dùng, không thể chọn lại!");
+                break;
+        }
+
+    }
+
     public void OnUnlockButtonClicked()
     {
         if (catProfile == null) return;
-        CatGameManager.Instance.UnlockCat(catProfile);
-        // Cập nhật UI
-        itemPriceText.text = "Đã mở khóa!";
-        UpdateItemStatus();
+        AvailableItem();
+        SaveCatState(); // Do hàm trên không có gọi lưu trạng thái bên CatGameManager nên cần gọi thêm hàm lưu ở đây
     }
 
     public void OnChangeCatButtonClicked()
@@ -39,19 +56,36 @@ public class ListCatItem : ListItem
 
         // Gọi hàm đổi mèo trong CatGameManager
         CatGameManager.Instance.ChangeCatProfile(catProfile);
+        UpdateItemStatus(); // Cập nhật trạng thái của item
+        listManager.CloseMenu();
     }
 
     public void UpdateItemStatus()
     {
         if (catProfile == null) return;
-        itemState = CatGameManager.Instance.IsCatUnlocked(catProfile) == true ? ItemState.Unlocked : ItemState.Locked;
+        itemState = CatGameManager.Instance.GetCatState(catProfile);
 
-        if (itemState == ItemState.Locked)
+        switch (itemState)
         {
-            LockItem();
-        } else
-        {
-            UnlockItem();
+            case ItemState.Locked:
+                LockItem();
+                break;
+            case ItemState.Unlocked:
+                UnlockItem();
+                break;
+            case ItemState.Available:
+                AvailableItem();
+                break;
+            case ItemState.InUse:
+                UseItem();
+                break;
         }
     }
+
+    public void SaveCatState()
+    {
+        if (catProfile == null) return;
+        CatGameManager.Instance.UpdateCatState(catProfile, itemState);
+    }
+
 }

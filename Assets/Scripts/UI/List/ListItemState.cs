@@ -1,5 +1,7 @@
 public enum ItemState
 {
     Unlocked,
-    Locked
+    Locked,
+    Available,
+    InUse
 }

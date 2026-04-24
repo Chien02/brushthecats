@@ -16,11 +16,11 @@ MonoBehaviour:
   spriteWarning: {fileID: -5013777757851244217, guid: 37febfae0b98ef04996ccf7717976856, type: 3}
   spriteLooking: {fileID: -5013777757851244217, guid: 37febfae0b98ef04996ccf7717976856, type: 3}
   spriteAngry: {fileID: -2726367482940437379, guid: ccafcc698eb0536468c8eb46969326d3, type: 3}
-  hairParticleSprite: {fileID: 7014400092742720408, guid: 269cddf7e24b71547aebb9bf8e521103, type: 3}
-  catName: Nam
+  hairParticleMaterial: {fileID: 2100000, guid: 5930f1b5634c34d4a9542060c6d2db21, type: 2}
+  catName: Nam Nam
   nature: "Qu\u1EADy, Hung d\u1EEF"
   age: 3
-  price: 50
+  price: 30
   soundPurring: {fileID: 8300000, guid: 9c7558c4221cf0a4bb3586211a744dce, type: 3}
   soundWarning: {fileID: 8300000, guid: d909347495ca5a34294fc337a943522b, type: 3}
   soundLooking: {fileID: 0}

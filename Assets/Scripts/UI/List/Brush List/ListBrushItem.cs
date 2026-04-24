@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ListBrushItem : ListItem
 {
-    private BrushInfo brushInfo;
+    public BrushInfo brushInfo;
 
     public void LoadProfile(BrushInfo profile)
     {
@@ -10,23 +10,39 @@ public class ListBrushItem : ListItem
         brushInfo = profile;
         itemNameText.text = brushInfo.brushName;
         itemPriceText.text = "Mở khóa: " + brushInfo.price.ToString() + " điểm";
-        image.sprite = brushInfo.brushSprite; // Hiển thị hình mèo ở trạng thái Away làm mặc định
+        image.sprite = brushInfo.brushSprite; 
         image.preserveAspect = true;
 
         // Cập nhật trạng thái nút
         UpdateItemStatus();
     }
 
+    public void OnItemButtonClicked()
+    {
+        if (brushInfo == null) return;
+
+        switch (itemState)
+        {
+            case ItemState.Unlocked:
+                OnUnlockButtonClicked();
+                break;
+            case ItemState.Available:
+                OnChangeBrushButtonClicked(); 
+                break;
+            case ItemState.InUse:
+                Debug.Log("Đây là lược đang dùng, không thể chọn lại!");
+                break;
+        }
+    }
+
     public void OnUnlockButtonClicked()
     {
         if (brushInfo == null) return;
-        CatGameManager.Instance.UnlockBrush(brushInfo);
-        // Cập nhật UI
-        itemPriceText.text = "Đã mở khóa!";
-        UpdateItemStatus();
+        AvailableItem();
+        SaveBrushState();
     }
 
-    public void OnChangeCatButtonClicked()
+    public void OnChangeBrushButtonClicked()
     {
         if (brushInfo == null) return;
         if (!CatGameManager.Instance.IsBrushUnlocked(brushInfo))
@@ -37,19 +53,35 @@ public class ListBrushItem : ListItem
 
         // Gọi hàm đổi lược trong CatGameManager
         CatGameManager.Instance.ChangeBrushInfo(brushInfo);
+        UpdateItemStatus(); // Cập nhật trạng thái của item
+        listManager.CloseMenu();
     }
 
     public void UpdateItemStatus()
     {
         if (brushInfo == null) return;
-        itemState = CatGameManager.Instance.IsBrushUnlocked(brushInfo) ? ItemState.Unlocked : ItemState.Locked;
-        
-        if (itemState == ItemState.Locked)
+        itemState = CatGameManager.Instance.GetBrushState(brushInfo);
+
+        switch (itemState)
         {
-            LockItem();
-        } else
-        {
-            UnlockItem();
+            case ItemState.Locked:
+                LockItem();
+                break;
+            case ItemState.Unlocked:
+                UnlockItem();
+                break;
+            case ItemState.Available:
+                AvailableItem();
+                break;
+            case ItemState.InUse:
+                UseItem();
+                break;
         }
+    }
+
+    public void SaveBrushState()
+    {
+        if (brushInfo == null) return;
+        CatGameManager.Instance.UpdateBrushState(brushInfo, itemState);
     }
 }

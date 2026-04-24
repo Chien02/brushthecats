@@ -257,7 +257,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6529207421245908145}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 7549799738762466496}
+        m_TargetAssemblyTypeName: ListChairItem, Assembly-CSharp
+        m_MethodName: OnItemButtonClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1969368567528155405
 GameObject:
   m_ObjectHideFlags: 0
@@ -316,7 +328,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.46569672, g: 0.43965814, b: 0.81761, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -325,7 +337,7 @@ MonoBehaviour:
       m_Calls: []
   m_Sprite: {fileID: 0}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -398,7 +410,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Cat Name
+  m_text: "T\xEAn gh\u1EBF"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -595,7 +607,12 @@ MonoBehaviour:
   itemButton: {fileID: 4027667763748175811}
   unlockButtonText: "M\u1EDF"
   lockButtonText: "Kh\xF3a"
+  useButtonText: "\u0110\u1ED5i"
+  inUseButtonText: "\u0110ang d\xF9ng"
+  unlockPriceText: "\u0110\xE3 m\u1EDF kh\xF3a!"
   itemState: 1
+  listManager: {fileID: 0}
+  chairInfo: {fileID: 0}
 --- !u!1 &7104942067538698916
 GameObject:
   m_ObjectHideFlags: 0

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ListChairItem : ListItem
 {
-    private ChairInfo chairInfo;
+    public ChairInfo chairInfo;
 
     public void LoadProfile(ChairInfo profile)
     {
@@ -17,16 +17,33 @@ public class ListChairItem : ListItem
         UpdateItemStatus();
     }
 
+    public void OnItemButtonClicked()
+    {
+        if (chairInfo == null) return;
+
+        switch (itemState)
+        {
+            case ItemState.Unlocked:
+                OnUnlockButtonClicked();
+                
+                break;
+            case ItemState.Available:
+                OnChangeChairButtonClicked(); 
+                break;
+            case ItemState.InUse:
+                Debug.Log("Đây là ghế đang dùng, không thể chọn lại!");
+                break;
+        }
+    }
+
     public void OnUnlockButtonClicked()
     {
         if (chairInfo == null) return;
-        CatGameManager.Instance.UnlockChair(chairInfo);
-        // Cập nhật UI
-        itemPriceText.text = "Đã mở khóa!";
-        UpdateItemStatus();
+        AvailableItem();
+        SaveChairState();
     }
 
-    public void OnChangeCatButtonClicked()
+    public void OnChangeChairButtonClicked()
     {
         if (chairInfo == null) return;
         if (!CatGameManager.Instance.IsChairUnlocked(chairInfo))
@@ -35,21 +52,37 @@ public class ListChairItem : ListItem
             return;
         }
 
-        // Gọi hàm đổi lược trong CatGameManager
+        // Gọi hàm đổi ghế trong CatGameManager
         CatGameManager.Instance.ChangeChairInfo(chairInfo);
+        UpdateItemStatus(); // Cập nhật trạng thái của item
+        listManager.CloseMenu();
     }
 
     public void UpdateItemStatus()
     {
         if (chairInfo == null) return;
-        itemState = CatGameManager.Instance.IsChairUnlocked(chairInfo) ? ItemState.Unlocked : ItemState.Locked;
-        
-        if (itemState == ItemState.Locked)
+        itemState = CatGameManager.Instance.GetChairState(chairInfo);
+
+        switch (itemState)
         {
-            LockItem();
-        } else
-        {
-            UnlockItem();
+            case ItemState.Locked:
+                LockItem();
+                break;
+            case ItemState.Unlocked:
+                UnlockItem();
+                break;
+            case ItemState.Available:
+                AvailableItem();
+                break;
+            case ItemState.InUse:
+                UseItem();
+                break;
         }
+    }
+
+    public void SaveChairState()
+    {
+        if (chairInfo == null) return;
+        CatGameManager.Instance.UpdateChairState(chairInfo, itemState);
     }
 }

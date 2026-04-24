@@ -12,10 +12,16 @@ public class ListItem : MonoBehaviour
 
     public Button itemButton;
 
-    public string unlockButtonText = "Mở";
     public string lockButtonText = "Khóa";
+    public string unlockButtonText = "Mở";
+    public string useButtonText = "Đổi";
+    public string inUseButtonText = "Đang dùng";
+    public string unlockPriceText = "Đã mở khóa!";
     
     public ItemState itemState = ItemState.Locked;
+    public ListManager listManager;
+
+    public void SetListManager(ListManager manager) { listManager = manager;}
 
     public void LockItem()
     {
@@ -28,8 +34,27 @@ public class ListItem : MonoBehaviour
     public void UnlockItem()
     {
         itemState = ItemState.Unlocked;
-        image.color = Color.white;
+        image.color = Color.black;
+        itemPriceText.text = unlockPriceText;
         itemButton.GetComponentInChildren<TextMeshProUGUI>().text = unlockButtonText;
+        itemButton.interactable = true;
+    }
+
+    public void AvailableItem()
+    {
+        itemState = ItemState.Available;
+        image.color = Color.white;
+        itemPriceText.text = unlockPriceText;
+        itemButton.GetComponentInChildren<TextMeshProUGUI>().text = useButtonText;
+        itemButton.interactable = true;
+    }
+
+    public void UseItem()
+    {
+        itemState = ItemState.InUse;
+        image.color = Color.white;
+        itemPriceText.text = unlockPriceText;
+        itemButton.GetComponentInChildren<TextMeshProUGUI>().text = inUseButtonText;
         itemButton.interactable = true;
     }
 }

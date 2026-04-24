@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 public class CursorUI : MonoBehaviour
 {
     public BrushInfo brushInfo;
+    public AudioSource brushSound;
     public bool isBrushing = false;
     private RectTransform _cursorTransform;
     private Canvas _parentCanvas;
@@ -38,6 +39,9 @@ public class CursorUI : MonoBehaviour
         if (isPressing && !isBrushing) {
             isBrushing = true;
             BrushAnimation();
+
+            if (brushSound.isPlaying) return;
+            brushSound.Play();
         }
         else if (!isPressing && isBrushing)
         {
@@ -46,8 +50,10 @@ public class CursorUI : MonoBehaviour
         }
     }
 
-    private void LoadBrushInfo()
+    #region Load Info
+    public void LoadBrushInfo(BrushInfo newBrushInfo = null)
     {
+        if (newBrushInfo != null) brushInfo = newBrushInfo;
         if (brushInfo != null)
         {
             // Cập nhật sprite của con trỏ chuột
@@ -55,9 +61,11 @@ public class CursorUI : MonoBehaviour
             if (image != null)
             {
                 image.sprite = brushInfo.brushSprite;
+                brushSound.clip = brushInfo.brushSound;
             }
         }
     }
+    #endregion
 
     private void OnEnable()
     {
@@ -89,6 +97,7 @@ public class CursorUI : MonoBehaviour
         }
     }
 
+    #region Animation
     public void IdleAnimation()
     {
         float duration = 0.5f;
@@ -119,4 +128,5 @@ public class CursorUI : MonoBehaviour
         LeanTween.scale(this.gameObject, targetScale, duration).setEase(LeanTweenType.easeInOutSine);
         LeanTween.rotateLocal(this.gameObject, targetRotation, duration).setEase(LeanTweenType.easeInOutSine);
     }
+    #endregion
 }

@@ -29,6 +29,36 @@ public class ListManager : MonoBehaviour
     public Transform targetPos;
     public Transform defaultPos;
 
+    public CatProfile GetCatProfile(string id)
+    {
+        foreach (var profile in catProfiles)
+        {
+            if (profile.catName != id) continue;
+            return profile;
+        }
+        return null;
+    }
+
+    public BrushInfo GetBrushInfo(string id)
+    {
+        foreach (var profile in brushInfos)
+        {
+            if (profile.brushName != id) continue;
+            return profile;
+        }
+        return null;
+    }
+
+    public ChairInfo GetChairInfo(string id)
+    {
+        foreach (var profile in chairInfos)
+        {
+            if (profile.chairName != id) continue;
+            return profile;
+        }
+        return null;
+    }
+
     private void OpenMenu(ListType type)
     {
         // Hiển thị giao diện nếu chưa mở, đồng thời pause game
@@ -47,6 +77,7 @@ public class ListManager : MonoBehaviour
                     var item = itemObj != null ? itemObj.GetComponent<ListCatItem>() : null ; // Nếu itemObj là null thì item là null
                     if (item != null)
                     {
+                        item.SetListManager(this);
                         item.LoadProfile(profile);
                     }
                 }
@@ -58,6 +89,7 @@ public class ListManager : MonoBehaviour
                     var item = itemObj != null ? itemObj.GetComponent<ListBrushItem>() : null ; // Nếu itemObj là null thì item là null
                     if (item != null)
                     {
+                        item.SetListManager(this);
                         item.LoadProfile(profile);
                     }
                 }
@@ -69,6 +101,7 @@ public class ListManager : MonoBehaviour
                     var item = itemObj != null ? itemObj.GetComponent<ListChairItem>() : null ; // Nếu itemObj là null thì item là null
                     if (item != null)
                     {
+                        item.SetListManager(this);
                         item.LoadProfile(info);
                     }
                 }
