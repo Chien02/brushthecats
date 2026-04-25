@@ -4,47 +4,62 @@ public class CatTween
 {
     public static void Idle(Cat cat)
     {
-        Vector3 originalScale = cat.transform.localScale;
-        Vector3 targetScale = originalScale * 1.05f;
+        // Phải cancel animation trước đó để tránh xung đột
+        LeanTween.cancel(cat.gameObject);
+        
+        // Trả scale về mặc định trước khi bắt đầu nhịp thở mới
+        cat.transform.localScale = cat.defaultScale; 
 
+        Vector3 targetScale = cat.defaultScale * 1.05f;
         LeanTween.scale(cat.gameObject, targetScale, 1f).setEase(LeanTweenType.easeInOutSine).setLoopPingPong();
     }
 
-    public static void Warning(Cat cat)
+    public static void Warning(Cat cat, float duration = 0.5f)
     {
-        Vector3 originalScale = cat.transform.localScale;
-        float targetX = originalScale.x * 0.7f;
-        float targetY = originalScale.y * 1.7f;
+        // Hủy Idle đang chạy vô hạn để bắt đầu Warning
+        LeanTween.cancel(cat.gameObject);
+        cat.transform.localScale = cat.defaultScale;
+
+        float targetX = cat.defaultScale.x * 0.7f;
+        float targetY = cat.defaultScale.y * 1.7f;
         Vector3 targetScale = new(targetX, targetY, 0);
 
-        LeanTween.scale(cat.gameObject, targetScale, 0.2f).setEase(LeanTweenType.easeInOutSine).setLoopPingPong(1);
-        LeanTween.scale(cat.gameObject, originalScale, 0.2f).setEase(LeanTweenType.easeInOutSine).setDelay(0.2f);
+        // LƯU Ý LOGIC: setLoopPingPong(1) nghĩa là đi từ A -> B -> A.
+        // Thời gian đi A -> B là duration/2. Thời gian về B -> A là duration/2.
+        // Tổng thời gian vừa tròn bằng biến 'duration', khớp hoàn hảo với WaitForSeconds bên Cat.cs.
+        LeanTween.scale(cat.gameObject, targetScale, duration / 2f).setEase(LeanTweenType.easeInOutSine).setLoopPingPong(1);
     }
 
     public static void Looking(Cat cat)
     {
-        // Tắt mọi tween đang chạy để tránh xung đột
+        // State này mèo đứng im nhìn chằm chằm nên chỉ cần ngắt Tween và reset scale
         LeanTween.cancel(cat.gameObject);
+        cat.transform.localScale = cat.defaultScale;
     }
 
-    public static void Angry(Cat cat)
+    public static void Angry(Cat cat, float duration = 0.5f)
     {   
-        float duration1 = 0.1f;
-        float duration2 = 1.5f;
+        // 0. ƯU TIÊN TUYỆT ĐỐI: Ngắt ngay lập tức mọi animation đang chạy
+        LeanTween.cancel(cat.gameObject);
 
-        // 1. Scale object lên mức 4f (x=4, y=4, z=4)
-        Vector3 targetScale1 = Vector3.one * 6f;
-        Vector3 targetScale2 = Vector3.one * 12f;
-        LeanTween.scale(cat.gameObject, targetScale1, duration1).setEase(LeanTweenType.easeInOutSine);
-        LeanTween.scale(cat.gameObject, targetScale2, duration2).setEase(LeanTweenType.easeInOutSine).setDelay(duration1);
+        // 1. Phóng to mèo (Dùng Tween để scale mượt mà tạo cảm giác lao tới, thay vì giật cục)
+        Vector3 targetScale = Vector3.one * 12f;
+        LeanTween.scale(cat.gameObject, targetScale, duration).setEase(LeanTweenType.easeInOutSine);
 
-        // 2. Lấy vị trí trung tâm màn hình dựa theo Camera chính
-        // Chúng ta lấy x, y của Camera và giữ nguyên trục Z của Mèo để tránh bị khuất sau Camera
+        // 2. Lấy vị trí trung tâm màn hình, giữ nguyên trục Z của mèo
         Vector3 centerPosition = Camera.main.transform.position;
         centerPosition.z = cat.transform.position.z;
 
         // 3. Di chuyển Mèo đến vị trí trung tâm
-        // Sau khi hoàn thành tween thì kết thúc trò chơi
-        LeanTween.move(cat.gameObject, centerPosition, duration2).setEase(LeanTweenType.easeInOutSine).setOnComplete(() => cat.catGameManager.GameOver());
+        // Khi hành động lao tới (move) hoàn thành -> Kết thúc game ngay lập tức
+        LeanTween.move(cat.gameObject, centerPosition, duration)
+                 .setEase(LeanTweenType.easeInOutSine)
+                 .setOnComplete(() => 
+                 {
+                     if (cat.catGameManager != null)
+                     {
+                         cat.catGameManager.GameOver();
+                     }
+                 });
     }
 }

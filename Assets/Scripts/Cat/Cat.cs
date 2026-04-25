@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem; 
 
 public class Cat : MonoBehaviour
 {
@@ -12,9 +13,19 @@ public class Cat : MonoBehaviour
     public AudioSource audioFXSource;
     private CatState currentState = CatState.Away;
 
+    // Biến lưu trữ Coroutine để có thể dừng lại bất cứ lúc nào
+    private Coroutine behaviorCoroutine;
+
     [Header ("Cat Properties")]
     public Vector3 defaultScale = new(1.5f, 1.5f, 1.5f);
     public int hairParticleCount = 15;
+
+    [Header("Interaction Settings")]
+    public float multiClickWindow = 1.0f; 
+    private bool isClickTracking = false; 
+    private int clickCount = 0;           
+    private float clickTimer = 0f;        
+    private Camera mainCamera;            
 
     public CatState CurrentState
     {
@@ -22,6 +33,14 @@ public class Cat : MonoBehaviour
         set 
         {
             if (currentState == value) return;
+
+            // KIỂM TRA QUAN TRỌNG: Nếu State bị ép sang Angry, dừng ngay lập tức vòng lặp tự động
+            if (value == CatState.Angry && behaviorCoroutine != null)
+            {
+                StopCoroutine(behaviorCoroutine);
+                behaviorCoroutine = null; // Đặt lại null để biết là không có coroutine nào đang chạy
+            }
+
             currentState = value;
             
             UpdateSprite(value);
@@ -35,6 +54,7 @@ public class Cat : MonoBehaviour
     public float minDurationAway = 1f;
     public float durationWarning = 0.5f;
     public float durationLooking = 3f;
+    public float durationAngry = 0.5f;
 
     public bool IsBrushing { get; set; } = false;
 
@@ -46,8 +66,63 @@ public class Cat : MonoBehaviour
 
     void Start()
     {
-        StartCoroutine(CatBehaviorRoutine());
+        mainCamera = Camera.main; 
+        
+        // Không start coroutine ở đây nữa. Mặc định mèo ở trạng thái Away (Idle)
+        CurrentState = CatState.Away;
         PlayStateSound(CatState.Away);
+    }
+
+    void Update()
+    {
+        if (CurrentState == CatState.Angry) return;
+        HandleInput();
+    }
+
+    void HandleInput()
+    {
+        if (isClickTracking)
+        {
+            clickTimer -= Time.deltaTime;
+            
+            if (clickTimer <= 0f)
+            {
+                isClickTracking = false;
+                clickCount = 0;
+            }
+        }
+
+        if (Pointer.current != null && Pointer.current.press.wasPressedThisFrame)
+        {
+            Vector2 pointerPosScreen = Pointer.current.position.ReadValue();
+            Vector2 pointerPosWorld = mainCamera.ScreenToWorldPoint(pointerPosScreen);
+
+            Collider2D hitCollider = Physics2D.OverlapPoint(pointerPosWorld);
+
+            if (hitCollider != null && hitCollider.gameObject == this.gameObject)
+            {
+                if (!isClickTracking)
+                {
+                    isClickTracking = true;
+                    clickTimer = multiClickWindow; 
+                    clickCount = 1;
+                }
+                else
+                {
+                    clickCount++;
+
+                    if (clickCount >= 3)
+                    {
+                        // Việc gán state này sẽ kích hoạt setter ở trên, tự động gọi StopCoroutine
+                        CurrentState = CatState.Angry; 
+                        Debug.Log("Meow! Tức giận vì bị chọc 3 lần!");
+
+                        isClickTracking = false;
+                        clickCount = 0;
+                    }
+                }
+            }
+        }
     }
 
     #region Load Data
@@ -65,14 +140,14 @@ public class Cat : MonoBehaviour
         UpdateSprite(CurrentState);
         UpdateAnimation(CurrentState);
 
-        // Chơi âm thanh happy
         PlaySFX(catProfile.soundHappy);
     }
     #endregion
 
     IEnumerator CatBehaviorRoutine()
     {
-        while (CurrentState != CatState.Angry)
+        // Sử dụng do...while để đảm bảo coroutine chạy ít nhất 1 vòng
+        do
         {
             CurrentState = CatState.Away;
             yield return new WaitForSeconds(Random.Range(minDurationAway, MaxDurationAway));
@@ -81,8 +156,20 @@ public class Cat : MonoBehaviour
             yield return new WaitForSeconds(durationWarning);
 
             CurrentState = CatState.Looking;
-            yield return new WaitForSeconds(durationLooking);
+            yield return new WaitForSeconds(Random.Range(1f, durationLooking));
+
+        } 
+        // Kiểm tra sau khi chạy xong 1 vòng, nếu người chơi VẪN ĐANG chải thì lặp lại vòng mới
+        while (IsBrushing && CurrentState != CatState.Angry);
+
+        // Nếu chạy xong vòng mà không còn chải nữa (và mèo chưa bị chọc giận), đưa mèo về lại Idle
+        if (CurrentState != CatState.Angry)
+        {
+            CurrentState = CatState.Away;
         }
+        
+        // Reset biến để lần chải tiếp theo có thể StartCoroutine lại từ đầu
+        behaviorCoroutine = null;
     }
 
     private void UpdateSprite(CatState state)
@@ -99,36 +186,41 @@ public class Cat : MonoBehaviour
     }
 
     #region Interaction from Brush
-    // Hàm này sẽ được Brush gọi liên tục khi đang đè lên mèo
     public void HandleBrushing(Vector3 brushPosition, bool isMoving, bool isScoringStroke)
     {
         if (CurrentState == CatState.Angry) return;
 
-        // Nếu đang nhìn mà bị chải -> Tức giận
         if (CurrentState == CatState.Looking)
         {
+            if (!isMoving) return;
+            
+            // Tương tự, nếu chuyển sang Angry ở đây, setter cũng tự động dập tắt Coroutine
             CurrentState = CatState.Angry;
             return;
         }
 
-        // 1. Dời vị trí Particle chạy theo chuột/lược
         Vector3 particlePos = hairParticles.transform.position;
         particlePos.x = brushPosition.x;
         particlePos.y = brushPosition.y;
         hairParticles.transform.position = particlePos;
 
-        // 2. Xử lý Logic Particle và Score
         if (isMoving)
         {
             if (!IsBrushing)
             {
                 IsBrushing = true;
-                hairParticles.Emit(hairParticleCount); // Bắn hạt khi bắt đầu vuốt
+                hairParticles.Emit(hairParticleCount); 
+
+                // Nếu người chơi bắt đầu chải và coroutine chưa chạy -> Kích hoạt vòng lặp trạng thái
+                if (behaviorCoroutine == null)
+                {
+                    behaviorCoroutine = StartCoroutine(CatBehaviorRoutine());
+                }
             }
 
             if (isScoringStroke && catGameManager != null)
             {
-                catGameManager.AddScore(); // Cộng điểm khi đủ 1 nhát chải
+                catGameManager.AddScore(); 
             }
         }
         else
@@ -143,18 +235,21 @@ public class Cat : MonoBehaviour
     public void ResetBrushingState()
     {
         IsBrushing = false;
+        // Chú ý: Ta không cần ngắt Coroutine ở đây vì theo yêu cầu của bạn, 
+        // Coroutine vẫn phải đợi chạy xong nốt vòng "Looking" hiện tại rồi mới tự kết thúc.
     }
     #endregion
 
-    #region Animation
+    #region Animation & Sound
+
     private void UpdateAnimation(CatState state)
     {
         switch (state)
         {
             case CatState.Away: CatTween.Idle(this); break;
-            case CatState.Warning: CatTween.Warning(this); break;
+            case CatState.Warning: CatTween.Warning(this, durationWarning); break;
             case CatState.Looking: CatTween.Looking(this); break;
-            case CatState.Angry: CatTween.Angry(this); break;
+            case CatState.Angry: CatTween.Angry(this, durationAngry); break;
         }
     }
 
@@ -166,9 +261,7 @@ public class Cat : MonoBehaviour
         }
         this.transform.localScale = defaultScale;
     }
-    #endregion
 
-    #region Sound
     void PlayStateSound(CatState state)
     {
         if (audioSource == null || catProfile == null) return;

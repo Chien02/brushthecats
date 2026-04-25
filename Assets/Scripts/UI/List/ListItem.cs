@@ -1,6 +1,4 @@
 using TMPro;
-using Unity.VisualScripting;
-using UnityEditor.Searcher;
 using UnityEngine;
 using UnityEngine.UI;
 

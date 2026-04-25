@@ -174,7 +174,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 104.8822, y: 27.4356}
+  m_SizeDelta: {x: 140.1666, y: 41.9275}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5855482777666680468
 CanvasRenderer:
@@ -605,8 +605,8 @@ MonoBehaviour:
   itemPriceText: {fileID: 7569601036468056180}
   image: {fileID: 6820902306511209088}
   itemButton: {fileID: 4027667763748175811}
-  unlockButtonText: "M\u1EDF"
   lockButtonText: "Kh\xF3a"
+  unlockButtonText: "M\u1EDF"
   useButtonText: "\u0110\u1ED5i"
   inUseButtonText: "\u0110ang d\xF9ng"
   unlockPriceText: "\u0110\xE3 m\u1EDF kh\xF3a!"
@@ -705,8 +705,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 20
-  m_fontSizeBase: 20
+  m_fontSize: 24
+  m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18

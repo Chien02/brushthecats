@@ -15,7 +15,7 @@ MonoBehaviour:
   spriteAway: {fileID: 8572905887920661259, guid: 4ac62bdc8c50b87468bf3b44d48cbed8, type: 3}
   spriteWarning: {fileID: -5513062722979220014, guid: eebf26cbc774be445b0e545ea323dce9, type: 3}
   spriteLooking: {fileID: -5513062722979220014, guid: eebf26cbc774be445b0e545ea323dce9, type: 3}
-  spriteAngry: {fileID: 8166710274925509176, guid: c9c6fa411d574134db96006692352eb6, type: 3}
+  spriteAngry: {fileID: -7128820665846190883, guid: 117d5f5bd98801c448f6f33215fdd968, type: 3}
   hairParticleMaterial: {fileID: 2100000, guid: 5930f1b5634c34d4a9542060c6d2db21, type: 2}
   catName: Minh Minh
   nature: "Hi\u1EC1n, d\u1EC5 qu\u1EA1o"

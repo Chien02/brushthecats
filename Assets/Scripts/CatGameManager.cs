@@ -180,7 +180,7 @@ public class CatGameManager : MonoBehaviour
             if (notificationManager != null)
             {
                 scoreManager.UnlockMilestone(nextMilestone);
-                notificationManager.ShowNotification($"{nextMilestone.rankName}! Mở khóa: {nextMilestone.unlockItem}");
+                notificationManager.ShowNotification($"{nextMilestone.rankName}!\n Mở khóa: {nextMilestone.unlockItem}");
             }
 
             // Đặt trạng thái Available khi mở khóa qua mốc điểm

@@ -27,7 +27,6 @@ public class Brush : MonoBehaviour
     
     [Header ("Input & Physics")]
     public LayerMask draggableLayer; 
-
     private bool available = true;
     private bool isBrushing = false;
     private bool isDragging = false;
@@ -91,6 +90,7 @@ public class Brush : MonoBehaviour
         }
     }
 
+    #region Brushing Logic
     private void OnTriggerEnter2D(Collider2D collision)
     {
         // Chặn không kích hoạt nếu lược đang bay về
@@ -165,6 +165,7 @@ public class Brush : MonoBehaviour
             if (brushSound.isPlaying) brushSound.Stop();
         }
     }
+    #endregion
 
     private void FollowPointer()
     {
