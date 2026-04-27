@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem; 
+using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 public class Cat : MonoBehaviour
 {
@@ -24,7 +25,7 @@ public class Cat : MonoBehaviour
     public float multiClickWindow = 1.0f; 
     private bool isClickTracking = false; 
     private int clickCount = 0;           
-    private float clickTimer = 0f;        
+    private float clickTimer = 0f;
     private Camera mainCamera;            
 
     public CatState CurrentState
@@ -66,7 +67,7 @@ public class Cat : MonoBehaviour
 
     void Start()
     {
-        mainCamera = Camera.main; 
+        mainCamera = Camera.main;
         
         // Không start coroutine ở đây nữa. Mặc định mèo ở trạng thái Away (Idle)
         CurrentState = CatState.Away;
@@ -75,6 +76,7 @@ public class Cat : MonoBehaviour
 
     void Update()
     {
+        if (EventSystem.current.IsPointerOverGameObject()) return; // Nếu đang hover UI, không xử lý input chọc mèo
         if (CurrentState == CatState.Angry) return;
         HandleInput();
     }
@@ -144,9 +146,9 @@ public class Cat : MonoBehaviour
     }
     #endregion
 
+    #region Coroutine for Cat Behavior
     IEnumerator CatBehaviorRoutine()
     {
-        // Sử dụng do...while để đảm bảo coroutine chạy ít nhất 1 vòng
         do
         {
             CurrentState = CatState.Away;
@@ -159,18 +161,16 @@ public class Cat : MonoBehaviour
             yield return new WaitForSeconds(Random.Range(1f, durationLooking));
 
         } 
-        // Kiểm tra sau khi chạy xong 1 vòng, nếu người chơi VẪN ĐANG chải thì lặp lại vòng mới
         while (IsBrushing && CurrentState != CatState.Angry);
 
-        // Nếu chạy xong vòng mà không còn chải nữa (và mèo chưa bị chọc giận), đưa mèo về lại Idle
         if (CurrentState != CatState.Angry)
         {
             CurrentState = CatState.Away;
         }
         
-        // Reset biến để lần chải tiếp theo có thể StartCoroutine lại từ đầu
         behaviorCoroutine = null;
     }
+    #endregion
 
     private void UpdateSprite(CatState state)
     {
@@ -193,8 +193,6 @@ public class Cat : MonoBehaviour
         if (CurrentState == CatState.Looking)
         {
             if (!isMoving) return;
-            
-            // Tương tự, nếu chuyển sang Angry ở đây, setter cũng tự động dập tắt Coroutine
             CurrentState = CatState.Angry;
             return;
         }
@@ -204,39 +202,41 @@ public class Cat : MonoBehaviour
         particlePos.y = brushPosition.y;
         hairParticles.transform.position = particlePos;
 
+        // Kiem tra isMoving de bat hoac tat trang thai chai
         if (isMoving)
         {
-            if (!IsBrushing)
+            IsBrushing = true;
+            if (behaviorCoroutine == null)
             {
-                IsBrushing = true;
-                hairParticles.Emit(hairParticleCount); 
-
-                // Nếu người chơi bắt đầu chải và coroutine chưa chạy -> Kích hoạt vòng lặp trạng thái
-                if (behaviorCoroutine == null)
-                {
-                    behaviorCoroutine = StartCoroutine(CatBehaviorRoutine());
-                }
-            }
-
-            if (isScoringStroke && catGameManager != null)
-            {
-                catGameManager.AddScore(); 
+                hairParticles.Emit(hairParticleCount);
+                behaviorCoroutine = StartCoroutine(CatBehaviorRoutine());
             }
         }
-        else
+        else if (IsBrushing) 
         {
-            if (IsBrushing)
-            {
-                IsBrushing = false;
-            }
+            // Neu luoc dung lai (!isMoving) nhung IsBrushing van dang true, 
+            // goi ResetBrushingState de tat IsBrushing va ngat Coroutine ngay lap tuc neu can
+            ResetBrushingState();
+        }
+
+        if (isMoving && isScoringStroke && catGameManager != null)
+        {
+            catGameManager.AddScore();
         }
     }
 
     public void ResetBrushingState()
     {
         IsBrushing = false;
-        // Chú ý: Ta không cần ngắt Coroutine ở đây vì theo yêu cầu của bạn, 
-        // Coroutine vẫn phải đợi chạy xong nốt vòng "Looking" hiện tại rồi mới tự kết thúc.
+        
+        if (CurrentState == CatState.Away)
+        {
+            if (behaviorCoroutine != null)
+            {
+                StopCoroutine(behaviorCoroutine);
+                behaviorCoroutine = null;
+            }
+        }
     }
     #endregion
 

@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.XR;
 
 [RequireComponent(typeof(Collider2D))] 
 public class Brush : MonoBehaviour
@@ -13,7 +15,7 @@ public class Brush : MonoBehaviour
     public float moveSpeed = 10f;
     public float rotationAngle = 65f;
     public float animationDuration = 0.5f;
-    private bool brushingFlag;
+    private bool brushingFlag; // For tween animation
     private Vector3 defaultScale = new(1.5f, 1.5f, 1);
 
     [Header("Brushing Mechanics (Combo System)")]
@@ -21,9 +23,14 @@ public class Brush : MonoBehaviour
     public float baseDistanceThreshold = 20f; 
     public float minDistanceThreshold = 5f; 
     public float comboDistanceDecrease = 2f; 
+    // BO SUNG: Bien buffer time de chong nhieu (flicker)
+    public float stopBufferDuration = 0.15f; 
+    private float _stopTimer = 0f;
+    private bool _smoothedIsMoving = false;
 
     private float _currentDistanceThreshold;
-    private float _accumulatedDownDistance = 0f;
+    private float _accumulatedDistance = 0f;
+
     
     [Header ("Input & Physics")]
     public LayerMask draggableLayer; 
@@ -74,9 +81,10 @@ public class Brush : MonoBehaviour
             isDragging = false;
             isBrushing = false;
             brushingFlag = false;
+            _smoothedIsMoving = false;
             
             _currentDistanceThreshold = baseDistanceThreshold;
-            _accumulatedDownDistance = 0f;
+            _accumulatedDistance = 0f;
             
             if (brushSound.isPlaying) brushSound.Stop();
             IdleAnimation();
@@ -98,54 +106,84 @@ public class Brush : MonoBehaviour
 
         if (collision.gameObject.GetComponent<Cat>() != null)
         {
-            _accumulatedDownDistance = 0f;
+            _accumulatedDistance = 0f;
             _currentDistanceThreshold = baseDistanceThreshold;
         }
     }
 
     private void OnTriggerStay2D(Collider2D other)
     {
-        // Chặn không kích hoạt nếu lược đang bay về
-        if (!isDragging || _isReturning) return; 
+        // Chan khong kich hoat neu luoc dang bay ve
+        if (_isReturning) return;
 
         Cat cat = other.GetComponent<Cat>(); 
         
-        if (cat != null)
+        if (cat == null) return;
+        if (!isDragging)
         {
-            isBrushing = true;
+            isBrushing = false;
+            _smoothedIsMoving = false; // Reset co di chuyen
+            cat.HandleBrushing(transform.position, false, false);
+            return;
+        }
 
-            Vector2 pointerDelta = Pointer.current.delta.ReadValue();
-            bool isMoving = Mathf.Abs(pointerDelta.x) > brushingRange || Mathf.Abs(pointerDelta.y) > brushingRange;
-            bool isScoringStroke = false;
+        Vector2 pointerDelta = Pointer.current.delta.ReadValue();
+        // Bien nay la trang thai raw cua frame hien tai
+        bool rawIsMoving = isDragging && pointerDelta.magnitude > brushingRange;
 
-            if (isMoving)
+        // XU LY LỌC NHIỄU (SMOOTHING)
+        if (rawIsMoving)
+        {
+            _stopTimer = stopBufferDuration; // Reset lai timer neu co di chuyen
+            _smoothedIsMoving = true;
+        }
+        else
+        {
+            // Neu frame nay khong di chuyen, bat dau tru gio
+            if (_stopTimer > 0)
             {
-                float downDelta = -pointerDelta.y; 
-                if (downDelta > 0)
-                {
-                    _accumulatedDownDistance += downDelta;
-                    
-                    while (_accumulatedDownDistance >= _currentDistanceThreshold)
-                    {
-                        isScoringStroke = true;
-                        _accumulatedDownDistance -= _currentDistanceThreshold; 
-                        _currentDistanceThreshold = Mathf.Max(minDistanceThreshold, _currentDistanceThreshold - comboDistanceDecrease);
-                    }
-                }
-                else
-                {
-                    _accumulatedDownDistance = 0f; 
-                }
-
-                if (!brushSound.isPlaying) brushSound.Play();
+                _stopTimer -= Time.deltaTime;
             }
             else
             {
-                if (brushSound.isPlaying) brushSound.Stop(); 
+                // Chi khi het gio dem ma van khong nhuc nhich, moi xac nhan la dung
+                _smoothedIsMoving = false;
+            }
+        }
+
+        bool isScoringStroke = false;
+
+        // Su dung _smoothedIsMoving thay cho isMoving cua ban
+        if (_smoothedIsMoving)
+        {
+            isBrushing = true;
+            if (_accumulatedDistance < _currentDistanceThreshold)
+            {
+                // Cong don cho den khi bang thi reset
+                _accumulatedDistance += pointerDelta.magnitude;
+                    
+                if (_accumulatedDistance >= _currentDistanceThreshold)
+                {
+                    isScoringStroke = true;
+                    _currentDistanceThreshold = Mathf.Max(minDistanceThreshold, _currentDistanceThreshold - comboDistanceDecrease);
+                }
+            }
+            else
+            {
+                _accumulatedDistance = 0f;
+                isScoringStroke = false;
+                isBrushing = false;
             }
 
-            cat.HandleBrushing(transform.position, isMoving, isScoringStroke);
+            if (!brushSound.isPlaying) brushSound.Play();
         }
+        else
+        {
+            if (brushSound.isPlaying) brushSound.Stop();
+        }
+
+        // Gui trang thai da duoc lam muot sang cho Cat
+        cat.HandleBrushing(transform.position, _smoothedIsMoving, isScoringStroke);
     }
 
     private void OnTriggerExit2D(Collider2D other)
@@ -158,7 +196,7 @@ public class Brush : MonoBehaviour
         {
             isBrushing = false;
             _currentDistanceThreshold = baseDistanceThreshold;
-            _accumulatedDownDistance = 0f;
+            _accumulatedDistance = 0f;
             
             cat.ResetBrushingState(); 
             
@@ -191,7 +229,7 @@ public class Brush : MonoBehaviour
         isDragging = false;
         isBrushing = false;
         brushingFlag = false;
-        _accumulatedDownDistance = 0f;
+        _accumulatedDistance = 0f;
         _currentDistanceThreshold = baseDistanceThreshold;
 
         // Tắt âm thanh
